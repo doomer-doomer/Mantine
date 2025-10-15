@@ -1,0 +1,14 @@
+.main{
+    padding: 2rem;
+}
+
+.main a{
+    color: blue;
+    text-decoration: underline;
+}
+
+.work{
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+}
