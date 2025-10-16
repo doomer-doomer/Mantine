@@ -248,14 +248,25 @@ export default function AdvanceTable(){
                 
     })
 
-    function addUsers (values: any){
+    function addUsers (values: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      jobTitle: string;
+      salary: number;
+      startDate: String | Date;
+    }){
       const newEmployee:Employee = {
         firstName: values.firstName,
         lastName:values.lastName,
         email:values.email,
         jobTitle:values.jobTitle,
         salary:values.salary,
-        startDate: values.startDate,
+        startDate: typeof values.startDate === 'string'
+          ? values.startDate
+          : values.startDate instanceof Date
+            ? values.startDate.toISOString()
+            : '',
         avatar : 'https://avatar.iran.liara.run/public/39',
         signatureCatchPhrase: "Hello I am "+ values.firstName
       }

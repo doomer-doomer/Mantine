@@ -6,6 +6,7 @@ import { customQuery } from './axios';
 import { Center, Flex, Image, Loader, Text } from '@mantine/core';
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Meme } from '@/types/meme';
 
 export default function Axios() {
   const { data, isPending, error } = useQuery(customQuery);
@@ -30,7 +31,7 @@ export default function Axios() {
     );
   }
 
-  const memes = data?.data?.memes ?? [];
+  const memes:Meme[] = data?.data?.memes ?? [];
 
   return (
     <div className="main">
