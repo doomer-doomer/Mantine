@@ -14,11 +14,24 @@ import { IconUserCircle, IconSend, IconCalendar } from '@tabler/icons-react';
 import { Employee, employeeData } from '@/types/employee';
 import { useDisclosure } from '@mantine/hooks';
 import { DatePickerInput } from '@mantine/dates';
+import { useForm } from '@mantine/form';
 
 export default function AdvanceTable(){
 
     const [data, setData] = useState<Employee[]>(employeeData);
     const [opened, { open, close }] = useDisclosure(false);
+
+    const form = useForm({
+        initialValues:{
+            firstName:"",
+            lastName:'',
+            email:'',
+            jobTitle:'',
+            salary:0,
+            startDate: new Date(),
+        },
+        
+    })
 
     const columns = useMemo<MRT_ColumnDef<Employee>[]>(()=>[
         {
@@ -234,38 +247,69 @@ export default function AdvanceTable(){
     },
                 
     })
+
+    function addUsers (values: any){
+      const newEmployee:Employee = {
+        firstName: values.firstName,
+        lastName:values.lastName,
+        email:values.email,
+        jobTitle:values.jobTitle,
+        salary:values.salary,
+        startDate: values.startDate,
+        avatar : 'https://avatar.iran.liara.run/public/39',
+        signatureCatchPhrase: "Hello I am "+ values.firstName
+      }
+
+      setData([...data,newEmployee]);
+      form.reset();
+      close();
+    }
     return (
         <div className="main">
             <h1>Advance Table</h1>
             <div className="work">
         <MantineReactTable table={table}/>
         <Modal opened={opened} onClose={close} title="Add Employee" centered>
+            <form onSubmit={form.onSubmit((values)=> addUsers(values))}>
             <Grid>
                 <Grid.Col span={6}>
-                            <TextInput label="First Name" placeholder='First Name' withAsterisk/>
+                            <TextInput label="First Name" placeholder='First Name' withAsterisk 
+                            {...form.getInputProps('firstName')}
+                            />
                 </Grid.Col>
                 <Grid.Col span={6}>
-                            <TextInput label="Last Name" placeholder='Last Name' withAsterisk/>
+                            <TextInput label="Last Name" placeholder='Last Name' withAsterisk
+                            {...form.getInputProps('lastName')}
+                            />
 
                 </Grid.Col>
                 <Grid.Col span={12}>
-                            <TextInput label="Email" placeholder='Email' withAsterisk/>
+                            <TextInput label="Email" placeholder='Email' withAsterisk
+                            {...form.getInputProps('email')}
+                            />
                 </Grid.Col>
                 <Grid.Col span={6}>
-                    <TextInput label="Job Title" placeholder='Job Title' withAsterisk/>
+                    <TextInput label="Job Title" placeholder='Job Title' withAsterisk
+                    {...form.getInputProps('jobTitle')}
+                    />
                 </Grid.Col>
                 <Grid.Col span={6}>
-                    <TextInput label="Salary" placeholder='Salary' withAsterisk/>
+                    <TextInput label="Salary" placeholder='Salary' withAsterisk
+                    {...form.getInputProps('salary')}
+                    />
                 </Grid.Col>
 
                 <Grid.Col span={12}>
-                <DatePickerInput label="Start Date" placeholder='Pick Date' withAsterisk rightSection={<IconCalendar/>}/>
+                <DatePickerInput label="Start Date" placeholder='Pick Date' withAsterisk rightSection={<IconCalendar/>}
+                {...form.getInputProps('startDate')}
+                />
                 </Grid.Col>
 
                 <Grid.Col span={12}>
-                <Button fullWidth onClick={close}>Submit</Button>
+                <Button fullWidth type='submit'>Submit</Button>
                 </Grid.Col>
     </Grid>
+    </form>
 
 
       </Modal>
