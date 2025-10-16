@@ -6,9 +6,10 @@ export default function Home() {
 
   return (
     <div className="main">
-    <h1>My Work</h1>
+    <h1>My Work from 15th October 2025</h1>
     <div className="work">
-        <p>Tables are here: <Link href={"/tables"}>Link</Link></p>
+      <h3>Here are the things i have Implemented till now</h3>
+        <p>Mantine React Tables are here: <Link href={"/tables"}>Link</Link></p>
     </div>
    </div>
   );

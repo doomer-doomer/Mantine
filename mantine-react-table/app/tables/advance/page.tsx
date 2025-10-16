@@ -1,0 +1,275 @@
+'use client';
+
+import '../../../css/home.css'
+import { useMemo, useState } from 'react';
+import {
+  MantineReactTable,
+  useMantineReactTable,
+  type MRT_ColumnDef,
+  MRT_GlobalFilterTextInput,
+  MRT_ToggleFiltersButton,
+} from 'mantine-react-table';
+import { Box, Button, Flex, Menu, Text, Title, Modal, TextInput, Grid } from '@mantine/core';
+import { IconUserCircle, IconSend, IconCalendar } from '@tabler/icons-react';
+import { Employee, employeeData } from '@/types/employee';
+import { useDisclosure } from '@mantine/hooks';
+import { DatePickerInput } from '@mantine/dates';
+
+export default function AdvanceTable(){
+
+    const [data, setData] = useState<Employee[]>(employeeData);
+    const [opened, { open, close }] = useDisclosure(false);
+
+    const columns = useMemo<MRT_ColumnDef<Employee>[]>(()=>[
+        {
+            id: "employee",
+            header:"Employee",
+            columns:[
+                {
+            accessorFn: (row) => `${row.firstName} ${row.lastName}`, //accessorFn used to join multiple data into a single cell
+            id: 'name', //id is still required when using accessorFn instead of accessorKey
+            header: 'Name',
+            size: 250,
+            filterVariant: 'autocomplete',
+            Cell: ({ renderedCellValue, row }) => (
+              <Box
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px',
+                }}
+              >
+                <img
+                  alt="avatar"
+                  height={30}
+                  src={row.original.avatar}
+                  style={{ borderRadius: '50%' }}
+                />
+                <span>{renderedCellValue}</span>
+              </Box>
+            ),
+          },
+          {
+            accessorKey:"email",
+            header:"Email",
+            enableClickToCopy: true,
+            size:300
+            },
+            ]
+        },
+        {
+            id:"id",
+            header:"Job Info",
+            columns:[
+                {
+                    accessorKey: "salary",
+                    header:"Salary",
+                    size:200,
+                    filterVariant: 'range-slider',
+                    mantineFilterRangeSliderProps: {
+                    color: 'indigo',
+                    label: (value) =>
+                        value?.toLocaleString?.('en-US', {
+                        style: 'currency',
+                        currency: 'INR',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0,
+                        }),
+                    },
+                    Cell: ({ cell }) => (
+                        <Box
+                            style={(theme) => ({
+                            backgroundColor:
+                                cell.getValue<number>() < 50_000
+                                ? theme.colors.red[9]
+                                : cell.getValue<number>() >= 50_000 &&
+                                    cell.getValue<number>() < 75_000
+                                ? theme.colors.yellow[9]
+                                : theme.colors.green[9],
+                            borderRadius: '4px',
+                            color: '#fff',
+                            maxWidth: '9ch',
+                            padding: '4px',
+                            })}
+                        >
+                            {cell.getValue<number>()?.toLocaleString?.('en-US', {
+                            style: 'currency',
+                            currency: 'INR',
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0,
+                            })}
+                        </Box>
+                        ),
+                                
+                },
+                {
+                    accessorKey: 'jobTitle', //hey a simple column for once
+                    header: 'Job Title',
+                    filterVariant: 'multi-select',
+                    size: 350,
+                },
+                {
+                    accessorFn: (row) => {
+                    //convert to Date for sorting and filtering
+                    const sDay = new Date(row.startDate);
+                    sDay.setHours(0, 0, 0, 0); // remove time from date (useful if filter by equals exact date)
+                    return sDay;
+                    },
+                    id: 'startDate',
+                    header: 'Start Date',
+                    filterVariant: 'date-range',
+                    sortingFn: 'datetime',
+                    enableColumnFilterModes: false, //keep this as only date-range filter with between inclusive filterFn
+                    Cell: ({ cell }) => cell.getValue<Date>()?.toLocaleDateString(), //render Date as a string
+                    Header: ({ column }) => <em>{column.columnDef.header}</em>, //custom header markup
+                },
+                
+            ]
+        }
+       
+    ],[])
+
+    const table = useMantineReactTable({
+        columns: columns,
+        data:data,
+        enableRowActions:true,
+        enableRowSelection: true,
+        enableColumnResizing: true,
+        enableFacetedValues:true,
+        enableGrouping:true,
+        enablePinning:true,
+        initialState: {showColumnFilters:true, showGlobalFilter: true},
+        paginationDisplayMode: 'pages',
+        positionToolbarAlertBanner:'bottom',
+        mantinePaginationProps: { radius:'xl', size:'lg'},
+        mantineSearchTextInputProps:{
+            placeholder: "Search Employees"
+        },
+        renderDetailPanel: ({row})=>(
+            <Box
+                style={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                gap: '16px',
+                padding: '16px',
+                }}
+            >
+                <img
+                alt="avatar"
+                height={200}
+                src={row.original.avatar}
+                style={{ borderRadius: '50%' }}
+                />
+                <Box style={{ textAlign: 'left' }}>
+                    <Text>Signature Catch Phrase</Text>
+                <Title>&quot;{row.original.signatureCatchPhrase}&quot;</Title>
+                <Text>About the employee</Text>
+                </Box>
+            </Box>
+                ),
+                renderRowActionMenuItems : () =>(
+                    <>
+                    <Menu.Item><IconUserCircle style={{ marginRight: 8 }} />View Profile</Menu.Item>
+                    <Menu.Item><IconSend style={{ marginRight: 8 }} />Send Email</Menu.Item>
+                    </>
+                ),
+                
+    renderTopToolbar: ({ table }) => {
+      const handleDeactivate = () => {
+        const selectedRows = table.getSelectedRowModel().flatRows;
+
+        table.getSelectedRowModel().flatRows.map((row) => {
+          //alert('deactivating ' + row.getValue('name'));
+          if (selectedRows.length === 0) return;
+        const idsToRemove = selectedRows.map((r) => r.original.email);
+        setData((prev) => prev.filter((row) => !idsToRemove.includes(row.email)));
+        });
+      };
+
+      const handleActivate = () => {
+        open();
+      };
+
+      const handleContact = () => {
+        table.getSelectedRowModel().flatRows.map((row) => {
+          alert('contact ' + row.getValue('name'));
+        });
+      };
+
+      return (
+        <Flex p="md" justify="space-between">
+          <Flex gap="xs">
+            {/* import MRT sub-components */}
+            <MRT_GlobalFilterTextInput table={table} />
+            <MRT_ToggleFiltersButton table={table} />
+          </Flex>
+          <Flex style={{ gap: '8px' }}>
+            <Button
+              color="red"
+              disabled={!table.getIsSomeRowsSelected()}
+              onClick={handleDeactivate}
+              variant="filled"
+            >
+              Remove
+            </Button>
+            <Button
+              color="green"
+              onClick={handleActivate}
+              variant="filled"
+            >
+              Add
+            </Button>
+            {/* <Button
+              color="blue"
+              disabled={!table.getIsSomeRowsSelected()}
+              onClick={handleContact}
+              variant="filled"
+            >
+              Contact
+            </Button> */}
+          </Flex>
+        </Flex>
+      );
+    },
+                
+    })
+    return (
+        <div className="main">
+            <h1>Advance Table</h1>
+            <div className="work">
+        <MantineReactTable table={table}/>
+        <Modal opened={opened} onClose={close} title="Add Employee" centered>
+            <Grid>
+                <Grid.Col span={6}>
+                            <TextInput label="First Name" placeholder='First Name' withAsterisk/>
+                </Grid.Col>
+                <Grid.Col span={6}>
+                            <TextInput label="Last Name" placeholder='Last Name' withAsterisk/>
+
+                </Grid.Col>
+                <Grid.Col span={12}>
+                            <TextInput label="Email" placeholder='Email' withAsterisk/>
+                </Grid.Col>
+                <Grid.Col span={6}>
+                    <TextInput label="Job Title" placeholder='Job Title' withAsterisk/>
+                </Grid.Col>
+                <Grid.Col span={6}>
+                    <TextInput label="Salary" placeholder='Salary' withAsterisk/>
+                </Grid.Col>
+
+                <Grid.Col span={12}>
+                <DatePickerInput label="Start Date" placeholder='Pick Date' withAsterisk rightSection={<IconCalendar/>}/>
+                </Grid.Col>
+
+                <Grid.Col span={12}>
+                <Button fullWidth onClick={close}>Submit</Button>
+                </Grid.Col>
+    </Grid>
+
+
+      </Modal>
+            </div>
+        </div>
+    )
+}

@@ -9,6 +9,7 @@ export default function Tables(){
             <div className="work">
                 <Link href={"/tables/basic"}>Basic Table</Link>
                 <Link href={"/tables/minimal"}>Minimal Table</Link>
+                <Link href={"/tables/advance"}>Advance Table</Link>
             </div>
         </div>
     )
