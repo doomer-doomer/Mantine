@@ -254,7 +254,7 @@ export default function AdvanceTable(){
       email: string;
       jobTitle: string;
       salary: number;
-      startDate: String | Date;
+      startDate: string | Date;
     }){
       const newEmployee:Employee = {
         firstName: values.firstName,

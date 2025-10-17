@@ -39,7 +39,7 @@ export default function Axios() {
 
       <div className="work">
         <Flex wrap="wrap" gap="md" justify="center">
-          {memes.map((item: any) => (
+          {memes.map((item: Meme) => (
             <motion.div
             
               key={item.id}
