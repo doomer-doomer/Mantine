@@ -1,6 +1,6 @@
 'use client'
 
-import '../../css/home.css'
+import '../../../css/home.css';
 import { useQuery } from "@tanstack/react-query";
 import { customQuery } from '../axios';
 import { Center, Flex, Image, Loader, Text } from '@mantine/core';
